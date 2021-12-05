@@ -5,6 +5,9 @@
 // a few possible improvements:
 // - make "pure C compatible"
 // - simplify the interface: use ony "natural" kiss_calendar_time values
+// - functions to get the day month weekday as a c-style string
+// - for tests, use 1st 1970, some random days in 2000, 2020, 2021, 2036, 2040, 2060
+// - for tests, run N random tests against the default c / cpp implementation
 
 #include <cstdint>
 
@@ -43,17 +46,21 @@ This code is very strongly inspired from Michael Margolis code, so we reproduce 
 using kiss_time_t = uint64_t;
 
 // struct representing calendar date and time
-// conventions quickly become confusing, we recommend to not use this natively
-// use the higher level interface instead!
+// hour, minute, second is as expected: starting at 0, going up to 23, 59, 59
+// week_day_starting_monday is 0 for monday, 1 for tuesday, etc...
+// day is day of the month, in "natural" convention, i.e. 1 is the first day of the month
+// month is in "natural" convention, i.e. 1 is january, 2 february, etc...
+// year is the "full" year, i.e. 2021, 2022, etc...
+// full example: second:12, minute:5, hour:14, day:12th, month:february:2, year:2023, week_day_start_monday:sunday:7
 struct kiss_calendar_time
 {
     uint8_t second;
     uint8_t minute;
     uint8_t hour;
-    uint8_t week_day_start_sunday; // day of week, sunday is day 1
+    uint8_t week_day_start_monday; // day of week, sunday is day 1
     uint8_t day;
     uint8_t month;
-    uint8_t years_since_1970;
+    uint16_t year;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -66,48 +73,29 @@ struct kiss_calendar_time
 #define SECS_PER_YEAR ((kiss_time_t)(31536000UL))
 
 // how many days per month, for non leap years (leap years would have a number of days of
-// 29 in february).
+// 29 in february); leap year, and february leap years, will be taken care of separately.
 static const uint8_t days_per_month[] =
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
-// low level functional interface
-// we do NOT recommend using these!
+// functions
+
+// Is the current year a leap year, in the Gregorian calendar?
+// In the Gregorian calendar, each leap year has 366 days instead of 365,
+// by extending February to 29 days rather than the common 28.
+// These extra days occur in each year which is an integer multiple of 4,
+// except for years evenly divisible by 100, but not by 400.
+bool is_leap_year(int const year);
 
 // given a calendar_in, compute the corresponding posix time
-// note that the calendar_in must follow the conventions used for the kiss_calendar_time struct
+// note that the calendar_in must follow the conventions used for the kiss_calendar_time struct,
+// see above
 kiss_time_t calendar_to_posix(kiss_calendar_time const *const calendar_in);
 
 // given a posix time, compute the corresponding calendar_time
-// note that kiss_calendar_time struct takes a few specific conventions
+// note that kiss_calendar_time struct follows a few specific conventions,
+// see above
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out);
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////
-// higher level functional interface
-// these should be the easiest functions to use
-
-// is the current year a leap year, in the Gregorian calendar?
-bool is_leap_year(int year_number);
-
-// given the calendar elements, compute the corresponding posix time
-// the calendar elements are in "natural" conventions: i.e., 2021, 2, 20, 0, 0, 1 is 20th Feb 2021 at 00:00:01
-kiss_time_t natural_calendar_to_posix(
-    int const year, uint8_t const month, uint8_t const day,
-    uint8_t const hour, uint8_t const minute, uint8_t const second);
-
-// given the posix time, compute the calendar elements
-// the calendar elements are in "natural" conventions: i.e., 2021, 2, 20, 0, 0, 1 is 20th Feb 2021 at 00:00:01
-// and 1 is monday, 2 is tuesday etc.
-void posix_to_natural_calendar(
-    kiss_time_t const posix_in,
-    int *year, uint8_t *month, uint8_t *day,
-    uint8_t *hour, uint8_t *minute, uint8_t *second,
-    uint8_t week_day);
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////
-// pre allocated working quantities, useful when working on MCUs with low resources
 
 #endif
