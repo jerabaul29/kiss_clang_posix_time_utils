@@ -3,10 +3,7 @@
 
 // TODO: 
 // a few possible improvements:
-// - function to get weekday
-// - functions to get the day month weekday as a c-style string
 // - put in a namespace
-// - add helper functions?
 
 // Arduino is a very common use case for this, so let us make ready to import for it!
 #ifdef ARDUINO
@@ -92,9 +89,9 @@ static constexpr uint8_t days_per_month_leap[] =
     {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 static constexpr uint16_t cumulative_days_per_month_normal[] =
-    {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static constexpr uint16_t cumulative_days_per_month_leap[] =
-    {31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
+    {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
 
 // TODO: move to additional functionalities
 // longest is 9 chars
@@ -148,14 +145,19 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
 // TODO: implement and test all below
 
 // is the current calendar a valid calendar entry?
-bool is_valid_calendar_entry(kiss_calendar_time const *const calendar_in);
+bool calendar_is_valid(kiss_calendar_time const *const calendar_in);
 
 // TODO: put it in an "extra functionalities" file
 
 // what is the current week day number associated with a calendar entry?
 // 1 is monday, 2 is tuesday, ..., 7 is sunday
-uint8_t week_day(kiss_time_t const posix_in);
-uint8_t week_day(kiss_calendar_time const *const calendar_in);
+uint8_t day_of_week(kiss_time_t const posix_in);
+uint8_t day_of_week(kiss_calendar_time const *const calendar_in);
+
+// which week number are we within the current year?
+// i.e. 1 is first week, 2 is second week, ..., 52 is 52nd
+uint8_t week_of_year(kiss_time_t const posix_in);
+uint8_t week_of_year(kiss_calendar_time const *const calendar_in);
 
 // print ISO8601 with second precision to buffer
 // ie prints: 2020-03-20T14:28:23 to the buffer
