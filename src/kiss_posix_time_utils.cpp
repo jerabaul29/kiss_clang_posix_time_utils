@@ -2,7 +2,8 @@
 
 /*
 
-This code was initially strongly inspired from Michael Margolis code, so we reproduce his license under:
+This code was initially strongly inspired from Michael Margolis code, so we reproduce his license under;
+the current version has evolved quite a bit, though :) :
 
   time.c - low level time and date functions
   Copyright (c) Michael Margolis 2009-2014

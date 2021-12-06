@@ -4,7 +4,7 @@ Keep it stupid simple primitives for performing conversions between Posix time a
 
 ## Why writing this library?
 
-I wrote this small library for some embedded / Arduino projects I was working on. I could not find a simple, minimalistic, non-bloated, unit tested library for doing conversions between Posix time and Gregorian calendar time.
+I wrote this small library for some embedded / Arduino projects I was working on. I could not find a simple, minimalistic, non-bloated, unit tested library for doing conversions between Posix time and Gregorian calendar time. In addition, I wanted something that I could i) include easily in any Arduino / PlatformIO project, ii) that did not have any dynamic allocation.
 
 The closest I found was the Timelib library at https://github.com/PaulStoffregen/Time . However, I was a bit frustrated by i) the mix of the core Posix - Gregorian primitives with quite a bit of application-specific code for timekeeping on MCUs, synchronization with time sources, etc, ii) the conventions used in the Gregorian calendar data struct, iii) the absence of unit testing and the many MCU specific macros, define etc that are not too relevant for me any longer when working on modern ARM-based MCUs.
 
