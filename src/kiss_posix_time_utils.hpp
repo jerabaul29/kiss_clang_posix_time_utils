@@ -6,6 +6,7 @@
 // - put in a namespace
 // - implement the additional stuff under
 // - move the extra functionalities to their own location
+// - compare / benchmark oryx OS implementation: https://github.com/Oryx-Embedded/Common/blob/master/date_time.c
 
 // Arduino is a very common use case for this, so let us make ready to import for it!
 #ifdef ARDUINO
