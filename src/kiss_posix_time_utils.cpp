@@ -61,6 +61,73 @@ kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
 
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out)
 {
+    uint16_t year;
+    uint8_t month, monthLength;
+    kiss_time_t time; // time has a "changing unit" in the following...
+    uint32_t days;
+
+    time = posix_in; // time in seconds
+    calendar_out->second = static_cast<uint8_t>( time % 60 );
+    time /= 60; // now it is minutes
+    calendar_out->minute = static_cast<uint8_t>( time % 60 );
+    time /= 60; // now it is hours
+    calendar_out->hour = static_cast<uint8_t>( time % 24 );
+    time /= 24; // now it is days
+    // calendar_out->week_day_start_monday = static_cast<uint8_t>( ((time + 3) % 7) + 1 ); // Monday is day 1
+
+    // find how many years have elapsed
+    year = EPOCH_START;
+    days = 0;
+    while (static_cast<uint64_t>(days += (is_leap_year(year) ? days_leap_year : days_normal_year)) <= time)
+    {
+        year++;
+    }
+    calendar_out->year= year;
+
+    // we have already counted the full number of days in the current year;
+    // reduce by the number of days in the current year
+    days -= is_leap_year(year) ? days_leap_year : days_normal_year;
+    time -= days; // now it is days in this year, starting at 0
+
+    // now we need to find out the month and day from the days in the year
+    for (month=1; month<=12; month++)
+    {
+
+        // find out how many days in the current month
+        if (month == 2)
+        { // february
+            if (is_leap_year(year))
+            {
+                monthLength = 29;
+            }
+            else
+            {
+                monthLength = 28;
+            }
+        }
+        else
+        {
+            monthLength = days_per_month_normal[month-1];
+        }
+
+        // are we going over the months?
+        if (time >= monthLength)
+        {
+            time -= monthLength;
+        }
+        else
+        {
+            break;
+        }
+    }
+    calendar_out->month = month; // jan is month 1, already taken care of above
+    calendar_out->day = static_cast<uint8_t>( time + 1 );    // day of month, starts at 1 not 0
+}
+
+
+/*
+void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out)
+{
     kiss_time_t time; // time has a "changing unit" in the following...
 
     time = posix_in; // time in seconds
@@ -116,3 +183,4 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
     calendar_out->month = month; // jan is month 1, already taken care of above
     calendar_out->day = static_cast<uint8_t>( time + 1 );    // day of month, starts at 1 not 0
 }
+*/
