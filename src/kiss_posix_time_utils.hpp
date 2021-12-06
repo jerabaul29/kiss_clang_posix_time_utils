@@ -48,6 +48,12 @@ https://github.com/PaulStoffregen/Time
 
 -- Oryx RTOS:
 https://github.com/Oryx-Embedded/Common/blob/master/date_time.c
+
+Note that you can choose between my "easy to understand" implementation
+and the more dark magics Oryx implementation by changing the USE_JR_IMPLEMENTATION
+switch in the cpp file. In practice, does not seem to make any meaningful performance
+difference, but my implementation is more understandable...
+
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////
