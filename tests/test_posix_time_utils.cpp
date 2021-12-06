@@ -28,6 +28,7 @@ TEST_CASE("is_leap_year"){
 }
 
 // if we go posix_time -> calendar -> posix_time, do we get back to the same time?
+// TODO: check in the middle that valid calendar!!
 bool back_and_forth_is_equal(kiss_time_t const posix_time){
     kiss_calendar_time working_calendar;
     kiss_time_t result_time;

@@ -17,12 +17,12 @@ g++ $WFLAGS -o test_suite.out main.cpp test*.cpp ../src/kiss_posix_time_utils.cp
 
 echo " "
 echo "--------------------"
-echo "run tests for double"
+echo "run tests"
 echo " "
 ./test_suite.out --durations yes --verbosity normal
 
 echo "--------------------"
-echo "cleanup double test"
+echo "cleanup tests"
 rm ./test_suite.out
 
 echo " "
