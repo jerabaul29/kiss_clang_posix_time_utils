@@ -84,6 +84,11 @@ TEST_CASE("calendar_to_posix"){
     working_time = 1614556800;
     working_calendar = {2021, 3, 1, 0, 0, 0};
     REQUIRE( calendar_to_posix(&working_calendar) == working_time );
+
+    // some problematic (in the past) values
+    working_time = 1638794479;
+    working_calendar = {2021, 12, 6, 12, 41, 19};
+    REQUIRE( calendar_to_posix(&working_calendar) == working_time );
 }
 
 // if we go posix_time -> calendar -> posix_time, do we get back to the same time?
