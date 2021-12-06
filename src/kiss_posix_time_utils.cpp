@@ -79,6 +79,21 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
     ////////////////////////////////////////////////////////////
     // find which year we are in
     uint16_t year {EPOCH_START};
+
+    // first try to eyeball
+    // this is not mandatory, can turn on or off
+    // on my laptop (but, of course, this is not a MCU, and results may differ from platform to platform),
+    // using this eyeballing has a large impact on performace (about twice as fast)
+    // TODO: would be fun to check performance effect on a MCU :)
+    #if 1
+        year = static_cast<uint16_t>(year + time / days_leap_year);
+        uint16_t year_minus_1 = static_cast<uint16_t>(year - 1);
+        time -= static_cast<kiss_time_t>(
+            year_minus_1 * 365 + year_minus_1 / 4 - year_minus_1 / 100 + year_minus_1 / 400
+            - 719162  // the value we would get for the expression starting at year 0 instead of 1970
+        );
+    #endif
+
     uint32_t nbr_days_in_current_year {0};
     // count cumulative number of days per year until we overshoot the number of days we look for
     while (true){

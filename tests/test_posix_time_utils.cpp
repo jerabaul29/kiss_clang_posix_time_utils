@@ -35,6 +35,11 @@ TEST_CASE("calendar_to_posix"){
     kiss_calendar_time working_calendar;
     kiss_time_t working_time;
 
+    // at around epoch start
+    working_time = 1;
+    working_calendar = {1970, 1, 1, 0, 0, 1};
+    REQUIRE( calendar_to_posix(&working_calendar) == working_time );
+
     // at around my time
     working_time = 1638795207;
     working_calendar = {2021, 12, 6, 12, 53, 27};

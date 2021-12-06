@@ -5,6 +5,7 @@
 // a few possible improvements:
 // - put in a namespace
 // - implement the additional stuff under
+// - move the extra functionalities to their own location
 
 // Arduino is a very common use case for this, so let us make ready to import for it!
 #ifdef ARDUINO
