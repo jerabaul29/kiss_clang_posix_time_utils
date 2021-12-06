@@ -3,23 +3,31 @@
 
 // TODO: 
 // a few possible improvements:
-// - make "pure C compatible"
-// - simplify the interface: use ony "natural" kiss_calendar_time values
+// - function to get weekday
 // - functions to get the day month weekday as a c-style string
-// - for tests, use 1st 1970, some random days in 2000, 2020, 2021, 2036, 2040, 2060
-// - for tests, run N random tests against the default c / cpp implementation
+// - put in a namespace
+// - add helper functions?
 
-#include <cstdint>
+// Arduino is a very common use case for this, so let us make ready to import for it!
+#ifdef ARDUINO
+  #include "Arduino.h"
+#else
+  #include <cstdint>
+  #include <stddef.h>
+#endif
 
 /*
 
 The aim of this library is to provide a self contained, minimalistic way of performing conversions
-back and from posix time and calendar time. In the following, we only consider dates that come
+to and from posix time and gregorian calendar time. In the following, we only consider dates that come
 after the unix epoch, ie date that are after the start of 1970. We use the Gregorian calendar,
-counting leap seconds. If you need dates before 1st Jan 1970, use some other library! However, we
-do use 64-bits posix timestamps, so this will continue to work after the Y2k38 overflow problem.
+counting leap days, not counting leap seconds. If you need dates before 1st Jan 1970, use some other library!
+However, we do use 64-bits posix timestamps, so this will continue to work after the Y2k38 overflow problem.
 
-This code is very strongly inspired from Michael Margolis code, so we reproduce his license under:
+- This code has been taking inspiration from:
+
+-- Michael Margolis code, so we reproduce his license under:
+https://github.com/michaelmargolis/arduino_time
 
   time.c - low level time and date functions
   Copyright (c) Michael Margolis 2009-2014
@@ -35,47 +43,86 @@ This code is very strongly inspired from Michael Margolis code, so we reproduce 
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+-- Paul Stoffregen code:
+https://github.com/PaulStoffregen/Time
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 // low level data structures
 
-// the usual posix epoch time since 1970
-// we use 64 bits to avoid any problem with the Y2k38 32-bits overflow
+// the usual posix epoch: seconds elapsed since 1970, counting leap years, not counting leap seconds
+// we use 64 bits to avoid any problem with the Y2k38 32-bits overflow for many, many years...
 using kiss_time_t = uint64_t;
 
-// struct representing calendar date and time
-// hour, minute, second is as expected: starting at 0, going up to 23, 59, 59
-// week_day_starting_monday is 0 for monday, 1 for tuesday, etc...
-// day is day of the month, in "natural" convention, i.e. 1 is the first day of the month
-// month is in "natural" convention, i.e. 1 is january, 2 february, etc...
-// year is the "full" year, i.e. 2021, 2022, etc...
-// full example: second:12, minute:5, hour:14, day:12th, month:february:2, year:2023, week_day_start_monday:sunday:7
+// struct representing calendar date and time in Gregorian calendar, using "natural" conventions,
+// i.e. hour, minute, second is as expected: starting at 0, going up to 23, 59, 59,
+// day is day of the month, in "natural" convention, i.e. 1 is the first day of the month, 2 second day, etc...,
+// month is in "natural" convention, i.e. 1 is january, 2 february, etc...,
+// year is the "full" year, i.e. 2021, 2022, etc... .
+// example: second:12, minute:5, hour:14, day:12, month:february:2, year:2023 is: 2023-02-12T14:05:12
+// this is different from the usual c standard library, but makes for easier use by humans
 struct kiss_calendar_time
 {
-    uint8_t second;
-    uint8_t minute;
-    uint8_t hour;
-    uint8_t week_day_start_monday; // day of week, sunday is day 1
-    uint8_t day;
-    uint8_t month;
     uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 // constants
 
-#define SECS_PER_MIN  ((kiss_time_t)(60UL))
-#define SECS_PER_HOUR ((kiss_time_t)(3600UL))
-#define SECS_PER_DAY  ((kiss_time_t)(86400UL))
-#define SECS_PER_YEAR ((kiss_time_t)(31536000UL))
+static constexpr kiss_time_t SECS_PER_MIN  = 60;
+static constexpr kiss_time_t SECS_PER_HOUR = 3600;
+static constexpr kiss_time_t SECS_PER_DAY  = 86400;
+static constexpr kiss_time_t SECS_PER_YEAR = 31536000;
 
-// how many days per month, for non leap years (leap years would have a number of days of
-// 29 in february); leap year, and february leap years, will be taken care of separately.
-static const uint8_t days_per_month[] =
+static constexpr uint16_t EPOCH_START = 1970;
+
+static constexpr uint32_t days_normal_year = 365;
+static constexpr uint32_t days_leap_year   = 366;
+
+static constexpr uint8_t days_per_month_normal[] =
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static constexpr uint8_t days_per_month_leap[] =
+    {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+static constexpr uint16_t cumulative_days_per_month_normal[] =
+    {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+static constexpr uint16_t cumulative_days_per_month_leap[] =
+    {31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
+
+// TODO: move to additional functionalities
+// longest is 9 chars
+static char const *const day_names[] = {
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+};
+
+// longest is 9 chars
+static char const *const month_names[] = {
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +133,7 @@ static const uint8_t days_per_month[] =
 // by extending February to 29 days rather than the common 28.
 // These extra days occur in each year which is an integer multiple of 4,
 // except for years evenly divisible by 100, but not by 400.
-bool is_leap_year(int const year);
+bool is_leap_year(uint16_t const year);
 
 // given a calendar_in, compute the corresponding posix time
 // note that the calendar_in must follow the conventions used for the kiss_calendar_time struct,
@@ -97,5 +144,32 @@ kiss_time_t calendar_to_posix(kiss_calendar_time const *const calendar_in);
 // note that kiss_calendar_time struct follows a few specific conventions,
 // see above
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out);
+
+// TODO: implement and test all below
+
+// is the current calendar a valid calendar entry?
+bool is_valid_calendar_entry(kiss_calendar_time const *const calendar_in);
+
+// TODO: put it in an "extra functionalities" file
+
+// what is the current week day number associated with a calendar entry?
+// 1 is monday, 2 is tuesday, ..., 7 is sunday
+uint8_t week_day(kiss_time_t const posix_in);
+uint8_t week_day(kiss_calendar_time const *const calendar_in);
+
+// print ISO8601 with second precision to buffer
+// ie prints: 2020-03-20T14:28:23 to the buffer
+// note that the buffer size must be at least 20 for having space for the terminating null byte
+// return true if success, false if no success (for example, buffer too small)
+bool print_iso(kiss_time_t const posix_in, char *const buffer_out, size_t const buffer_size);
+bool print_iso(kiss_calendar_time const *const calendar_in, char *const buffer_out, size_t const buffer_size);
+
+// print full date in English convention to the buffer
+// i.e. print: Wednesday 23 September 2021, 14:32:05
+// need a buffer that is large enough, typically at least 38
+// return true if success, false if no success (for example, buffer too small)
+bool print_plaintext(kiss_time_t const posix_in, char *const buffer_out, size_t const buffer_size);
+bool print_plaintext(kiss_calendar_time const *const calendar_in, char *const buffer_out, size_t const buffer_size);
+
 
 #endif

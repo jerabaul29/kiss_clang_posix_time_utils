@@ -2,7 +2,7 @@
 
 /*
 
-This code is very strongly inspired from Michael Margolis code, so we reproduce his license under:
+This code was initially strongly inspired from Michael Margolis code, so we reproduce his license under:
 
   time.c - low level time and date functions
   Copyright (c) Michael Margolis 2009-2014
@@ -20,23 +20,24 @@ This code is very strongly inspired from Michael Margolis code, so we reproduce 
 
 */
 
+// TODO: use more efficient implementations!
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 // functions
 
-bool is_leap_year(int const year_number)
+bool is_leap_year(uint16_t const year_number)
 {
     return (year_number % 4 == 0) && (!(year_number % 100 == 0) || (year_number % 400 == 0));
 }
 
 kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
-    int i;
-    uint64_t seconds;
+    kiss_time_t seconds;
 
-    // start by computing seconds from 1970 until 1 jan 00:00:00 of the given year
-    seconds = (calendar_in->year-1970) * SECS_PER_YEAR;  // no leap effect at this point ...
+    // start by computing seconds from EPOCH_START until 1 jan 00:00:00 of the given year
+    seconds = static_cast<kiss_time_t>( (calendar_in->year-EPOCH_START) ) * SECS_PER_YEAR;  // no leap effect at this point ...
     // ... get back the leaped seconds
-    for (i=1970; i < calendar_in->year; i++)
+    for (uint16_t i=EPOCH_START; i<calendar_in->year; i++)
     {
         if (is_leap_year(i))
         {
@@ -45,7 +46,7 @@ kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
     }
 
     // add all the days for the months fully elapsed in this year, months start from 1
-    for (i = 1; i < calendar_in->month; i++)
+    for (int i=1; i<calendar_in->month; i++)
     {
         // do we have a leap year february?
         if ((i == 2) && is_leap_year(calendar_in->year))
@@ -54,36 +55,36 @@ kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
         }
         else  // this is a normal month
         {
-            seconds += SECS_PER_DAY * days_per_month[i - 1]; // days_per_month array start index is 0
+            seconds += SECS_PER_DAY * days_per_month_normal[i - 1]; // days_per_month array start index is 0
         }
     }
-    seconds += (calendar_in->day - 1) * SECS_PER_DAY;
+    seconds += static_cast<kiss_time_t>(calendar_in->day - 1) * SECS_PER_DAY;
     seconds += calendar_in->hour * SECS_PER_HOUR;
     seconds += calendar_in->minute * SECS_PER_MIN;
     seconds += calendar_in->second;
-    return (kiss_time_t)seconds;
+    return seconds;
 }
 
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out)
 {
     uint16_t year;
     uint8_t month, monthLength;
-    uint64_t time; // time has a "changing unit" in the following...
+    kiss_time_t time; // time has a "changing unit" in the following...
     uint32_t days;
 
-    time = (uint64_t)posix_in; // time in seconds
-    calendar_out->second = time % 60;
+    time = posix_in; // time in seconds
+    calendar_out->second = static_cast<uint8_t>( time % 60 );
     time /= 60; // now it is minutes
-    calendar_out->minute = time % 60;
+    calendar_out->minute = static_cast<uint8_t>( time % 60 );
     time /= 60; // now it is hours
-    calendar_out->hour = time % 24;
+    calendar_out->hour = static_cast<uint8_t>( time % 24 );
     time /= 24; // now it is days
-    calendar_out->week_day_start_monday = ((time + 3) % 7) + 1; // Monday is day 1
+    // calendar_out->week_day_start_monday = static_cast<uint8_t>( ((time + 3) % 7) + 1 ); // Monday is day 1
 
     // find how many years have elapsed
-    year = 1970;
+    year = EPOCH_START;
     days = 0;
-    while ((unsigned)(days += (is_leap_year(year) ? 366 : 365)) <= time)
+    while (static_cast<uint64_t>(days += (is_leap_year(year) ? days_leap_year : days_normal_year)) <= time)
     {
         year++;
     }
@@ -91,7 +92,7 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
 
     // we have already counted the full number of days in the current year;
     // reduce by the number of days in the current year
-    days -= is_leap_year(year) ? 366 : 365;
+    days -= is_leap_year(year) ? days_leap_year : days_normal_year;
     time -= days; // now it is days in this year, starting at 0
 
     // now we need to find out the month and day from the days in the year
@@ -112,7 +113,7 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
         }
         else
         {
-            monthLength = days_per_month[month-1];
+            monthLength = days_per_month_normal[month-1];
         }
 
         // are we going over the months?
@@ -126,5 +127,5 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
         }
     }
     calendar_out->month = month; // jan is month 1, already taken care of above
-    calendar_out->day = time + 1;    // day of month, starts at 1 not 0
+    calendar_out->day = static_cast<uint8_t>( time + 1 );    // day of month, starts at 1 not 0
 }
