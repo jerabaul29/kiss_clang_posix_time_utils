@@ -42,7 +42,8 @@ bool is_leap_year(uint16_t const year_number)
 
 #if USE_JR_IMPLEMENTATION
 
-    // a readable implementation
+    // my own readable (according to me :) ) implementations
+    
     kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
         kiss_time_t seconds;
 
@@ -125,25 +126,19 @@ bool is_leap_year(uint16_t const year_number)
         // now we need to find out the month we are in
 
         // are we currently in a leap or non leap year, and how many days per month for us?
-        uint8_t const (* days_per_month)[12];
+        uint16_t const (* cumulative_days_per_month)[13];
         if (is_leap_year(year)){
-            days_per_month = &days_per_month_leap;
+            cumulative_days_per_month = &cumulative_days_per_month_leap;
         }
         else{
-            days_per_month = &days_per_month_normal;
+            cumulative_days_per_month = &cumulative_days_per_month_normal;
         }
-
-        // crrt nbr of days in month
-        uint8_t crrt_nbr_days {0};
 
         // find out which month we are in, and how many days are left
         for (uint8_t month=1; month<=12; month++)
         {
-            crrt_nbr_days = (*days_per_month)[month-1];
-            if (time >= crrt_nbr_days){
-                time -= crrt_nbr_days;
-            }
-            else{  // going one month further overshoots: this is the month we are in
+            if (time < (*cumulative_days_per_month)[month]){
+                time = time - (*cumulative_days_per_month)[month-1];
                 calendar_out->month = month; // jan is month 1, already taken care of above [we start at 1]
                 break;
             }
@@ -156,7 +151,9 @@ bool is_leap_year(uint16_t const year_number)
 
 #else
 
-    // the Oryx implementation, with modulo magics, though relatively similar to mine...
+    // the Oryx implementations
+
+    // calendar to posix, with modulo magics, though relatively similar to mine...
     // about the same speed as mine, and mince is easier to understand, so keep mine.
     kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in) {
     int y;
@@ -193,7 +190,7 @@ bool is_leap_year(uint16_t const year_number)
     return t;
     }
 
-    // the Oryx implementation, with lots of modulo magics, this time really incomprehensible to me - good luck finding
+    // posix to calendar, with lots of modulo magics, this time really incomprehensible to me - good luck finding
     // these expressions in the first place ^^ :)
     // funnily, this is slightly slower than my implementation above on my computer (though not clear how relevant for a MCU),
     // so keep my implementation :) . But this passes all tests, so this seems to be correct!

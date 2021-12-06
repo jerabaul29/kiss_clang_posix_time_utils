@@ -8,7 +8,7 @@ I wrote this small library for some embedded / Arduino projects I was working on
 
 This is a KeepItStupidSimple library: I go for a clean, easy-to-read, simple implementation rather than trying to tweak stuff for performance. While I try to keep the code KISS, I still try to use some reasonably efficient algorithms though - if you know about some much better algorithms to do the same thing, let me know :) .
 
-The closest I found was the Timelib library at https://github.com/PaulStoffregen/Time . However, I was a bit frustrated by i) the mix of the core Posix - Gregorian primitives with quite a bit of application-specific code for timekeeping on MCUs, synchronization with time sources, etc, ii) the conventions used in the Gregorian calendar data struct, iii) the absence of unit testing and the many MCU specific macros, define etc that are not too relevant for me any longer when working on modern ARM-based MCUs.
+The closest I found was the Timelib library at https://github.com/PaulStoffregen/Time . However, I was a bit frustrated by i) the mix of the core Posix - Gregorian primitives with quite a bit of application-specific code for timekeeping on MCUs, synchronization with time sources, etc, ii) the conventions used in the Gregorian calendar data struct, iii) the absence of unit testing and iv) the many MCU specific macros, define etc that are not too relevant for me any longer when working on modern ARM-based MCUs.
 
 ## Goals
 
@@ -27,7 +27,7 @@ We separate the "really core functions", i.e. conversions from and to Gregorian 
 
 This should be usable as-is in an Arduino or PlatformIO project: just clone the repo in the library folder corresponding to your case.
 
-For other uses, there are simply a couple of files in the **src** folder to use.
+For other uses, there are simply a couple of files in the **src** folder to compile and use.
 
 ## Example
 
