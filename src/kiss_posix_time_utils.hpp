@@ -45,6 +45,9 @@ https://github.com/michaelmargolis/arduino_time
 
 -- Paul Stoffregen code:
 https://github.com/PaulStoffregen/Time
+
+-- Oryx RTOS:
+https://github.com/Oryx-Embedded/Common/blob/master/date_time.c
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////

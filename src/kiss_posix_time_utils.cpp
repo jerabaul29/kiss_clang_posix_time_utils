@@ -19,6 +19,10 @@ the current version has evolved quite a bit, though :) :
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+I also include here the adapted Oryx implementation, from: https://github.com/Oryx-Embedded/Common/blob/master/date_time.c
+These look like magics, but are actually not faster or slightly slower than my implementations, so I keep my implementations
+as they are easier to understand... But still, the Oryx stuff looks so fun that I keep it here "just for the records".
+
 */
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +34,7 @@ bool is_leap_year(uint16_t const year_number)
     return (year_number % 4 == 0) && (!(year_number % 100 == 0) || (year_number % 400 == 0));
 }
 
+// a readable implementation
 kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
     kiss_time_t seconds;
 
@@ -60,6 +65,45 @@ kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in){
 
     return seconds;
 }
+
+/*
+// the Oryx implementation, with modulo magics, though relatively similar to mine...
+// about the same speed as mine, and mince is easier to understand, so keep mine.
+kiss_time_t calendar_to_posix(kiss_calendar_time const * const calendar_in) {
+   int y;
+   int m;
+   int d;
+   kiss_time_t t;
+
+   //Year
+   y = calendar_in->year;
+   //Month of year
+   m = calendar_in->month;
+   //Day of month
+   d = calendar_in->day;
+
+   //January and February are counted as months 13 and 14 of the previous year
+   if(m <= 2)
+   {
+      m += 12;
+      y -= 1;
+   }
+
+   //Convert years to days
+   t = static_cast<kiss_time_t>( (365 * y) + (y / 4) - (y / 100) + (y / 400) );
+   //Convert months to days
+   t = t + static_cast<kiss_time_t>( (30 * m) + (3 * (m + 1) / 5) + d );
+   //Unix time starts on January 1st, 1970
+   t = t - 719561;
+   //Convert days to seconds
+   t *= 86400;
+   //Add hours, minutes and seconds
+   t += static_cast<kiss_time_t>( (3600 * calendar_in->hour) + (60 * calendar_in->minute) + calendar_in->second );
+
+   //Return Unix time
+   return t;
+}
+*/
 
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out)
 {
@@ -140,3 +184,52 @@ void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const cal
     // now days left are days of the month
     calendar_out->day = static_cast<uint8_t>( time + 1 );    // day of month, starts at 1 not 0
 }
+
+/*
+// the Oryx implementation, with lots of modulo magics, this time really incomprehensible to me - good luck finding
+// these expressions in the first place ^^ :)
+// funnily, this is slightly slower than my implementation above on my computer (though not clear how relevant for a MCU),
+// so keep my implementation :) . But this passes all tests, so this seems to be correct!
+void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out){
+   uint32_t a;
+   uint32_t b;
+   uint32_t c;
+   uint32_t d;
+   uint32_t e;
+   uint32_t f;
+   kiss_time_t t {posix_in};
+
+   //Retrieve hours, minutes and seconds
+   calendar_out->second = static_cast<uint8_t>( t % 60 );
+   t /= 60;
+   calendar_out->minute = static_cast<uint8_t>( t % 60 );
+   t /= 60;
+   calendar_out->hour = static_cast<uint8_t>( t % 24 );
+   t /= 24;
+
+   //Convert Unix time to date
+   a = static_cast<uint32_t>( (4 * t + 102032) / 146097 + 15 );
+   b = static_cast<uint32_t>( t + 2442113 + a - (a / 4) );
+   c = (20 * b - 2442) / 7305;
+   d = b - 365 * c - (c / 4);
+   e = d * 1000 / 30601;
+   f = d - e * 30 - e * 601 / 1000;
+
+   //January and February are counted as months 13 and 14 of the previous year
+   if(e <= 13)
+   {
+      c -= 4716;
+      e -= 1;
+   }
+   else
+   {
+      c -= 4715;
+      e -= 13;
+   }
+
+   //Retrieve year, month and day
+   calendar_out->year = static_cast<uint16_t>(c);
+   calendar_out->month = static_cast<uint8_t>(e);
+   calendar_out->day = static_cast<uint8_t>(f);
+}
+*/
