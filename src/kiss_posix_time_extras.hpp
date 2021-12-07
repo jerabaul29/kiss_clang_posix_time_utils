@@ -3,7 +3,9 @@
 
 #include "kiss_posix_time_utils.hpp"
 
-// TODO: implement all under
+#ifndef ARDUINO
+  #include <cstdio>
+#endif
 
 // print ISO8601 with second precision to buffer
 // ie prints: 2020-03-20T14:28:23 to the buffer
@@ -11,6 +13,8 @@
 // return true if success, false if no success (for example, buffer too small)
 bool print_iso(kiss_time_t const posix_in, char *const buffer_out, size_t const buffer_size);
 bool print_iso(kiss_calendar_time const *const calendar_in, char *const buffer_out, size_t const buffer_size);
+
+// TODO: implement all under (if there is some demand for it!)
 
 // what is the current week day number associated with a calendar entry?
 // 1 is monday, 2 is tuesday, ..., 7 is sunday

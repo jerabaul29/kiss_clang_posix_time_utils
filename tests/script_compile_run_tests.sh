@@ -13,7 +13,7 @@ echo " "
 echo "--------------------"
 echo "compile all tests"
 
-g++ $WFLAGS -o test_suite.out main.cpp test*.cpp ../src/kiss_posix_time_utils.cpp
+g++ $WFLAGS -o test_suite.out main.cpp test*.cpp ../src/kiss_posix_time_utils.cpp ../src/kiss_posix_time_extras.cpp
 
 echo " "
 echo "--------------------"
