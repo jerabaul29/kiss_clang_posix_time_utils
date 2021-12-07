@@ -27,6 +27,37 @@ TEST_CASE("is_leap_year"){
     REQUIRE( is_leap_year(2400) );
 }
 
+TEST_CASE("valid_calendar"){
+    kiss_calendar_time working_calendar;
+
+    working_calendar = {1970, 1, 1, 0, 0, 1};
+    REQUIRE( calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 12, 3, 18, 12, 39};
+    REQUIRE( calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 0, 3, 18, 12, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 13, 3, 18, 12, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 11, 0, 18, 12, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 11, 31, 18, 12, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 11, 12, 24, 12, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 11, 12, 21, 60, 39};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+
+    working_calendar = {2021, 11, 12, 21, 34, 60};
+    REQUIRE( !calendar_is_valid(&working_calendar));
+}
+
 TEST_CASE("calendar_to_posix"){
     // a number of specific test cases that we can go from calendar to posix
     // since we check below that calendar to posix and posix to calendar are inverse operation of
@@ -97,7 +128,6 @@ TEST_CASE("calendar_to_posix"){
 }
 
 // if we go posix_time -> calendar -> posix_time, do we get back to the same time?
-// TODO: check in the middle that valid calendar!!
 bool back_and_forth_is_equal(kiss_time_t const posix_time){
     kiss_calendar_time working_calendar;
     kiss_time_t result_time;
@@ -105,7 +135,9 @@ bool back_and_forth_is_equal(kiss_time_t const posix_time){
     posix_to_calendar(posix_time, &working_calendar);
     result_time = calendar_to_posix(&working_calendar);
 
-    return result_time == posix_time;
+    bool valid_calendar = calendar_is_valid(&working_calendar);
+
+    return ( (result_time == posix_time) && valid_calendar );
 }
 
 TEST_CASE("back_and_forth_posix_calendar_posix"){
@@ -120,7 +152,7 @@ TEST_CASE("back_and_forth_posix_calendar_posix"){
 }
 
 // this is only going up to RAND_MAX, but should be fine enough...
-// TODO: use propoer random C++11 to go to higher values!
+// TODO: possible improvement: use propoer random C++11 to go to higher values!
 kiss_time_t get_random_posix(void){
     return static_cast<kiss_time_t>(rand());
 }
