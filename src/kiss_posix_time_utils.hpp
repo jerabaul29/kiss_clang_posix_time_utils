@@ -1,11 +1,9 @@
 #ifndef KISS_POSIX_TIME_UTILS
 #define KISS_POSIX_TIME_UTILS
 
-// TODO: 
+// TODO:
 // a few possible improvements:
-// - put in a namespace
-// - implement the additional stuff under
-// - move the extra functionalities to their own location
+// - put in a namespace (but then will be further from C, in case someone wants to use this with C some day)
 
 // Arduino is a very common use case for this, so let us make ready to import for it!
 #ifdef ARDUINO
@@ -103,34 +101,6 @@ static constexpr uint16_t cumulative_days_per_month_normal[] =
     {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 static constexpr uint16_t cumulative_days_per_month_leap[] =
     {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
-
-// TODO: move to additional functionalities
-// longest is 9 chars
-static char const *const day_names[] = {
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday"
-};
-
-// longest is 9 chars
-static char const *const month_names[] = {
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December"
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////

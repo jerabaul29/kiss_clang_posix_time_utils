@@ -7,6 +7,42 @@
   #include <cstdio>
 #endif
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+// some general names
+
+// longest is 9 chars
+static char const *const day_names[] = {
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+};
+
+// longest is 9 chars
+static char const *const month_names[] = {
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+// functions
+
 // print ISO8601 with second precision to buffer
 // ie prints: 2020-03-20T14:28:23 to the buffer
 // note that the buffer size must be at least 20 for having space for the terminating null byte
@@ -32,6 +68,5 @@ uint8_t week_of_year(kiss_calendar_time const *const calendar_in);
 // return true if success, false if no success (for example, buffer too small)
 bool print_plaintext(kiss_time_t const posix_in, char *const buffer_out, size_t const buffer_size);
 bool print_plaintext(kiss_calendar_time const *const calendar_in, char *const buffer_out, size_t const buffer_size);
-
 
 #endif
