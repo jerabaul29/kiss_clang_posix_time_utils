@@ -145,15 +145,13 @@ bool is_leap_year(uint16_t const year);
 
 // given a calendar_in, compute the corresponding posix time
 // note that the calendar_in must follow the conventions used for the kiss_calendar_time struct,
-// see above
+// see above; also note that you NEED a valid calendar in!
 kiss_time_t calendar_to_posix(kiss_calendar_time const *const calendar_in);
 
 // given a posix time, compute the corresponding calendar_time
 // note that kiss_calendar_time struct follows a few specific conventions,
-// see above
+// see above; the calendar out will always be valid.
 void posix_to_calendar(kiss_time_t const posix_in, kiss_calendar_time *const calendar_out);
-
-// TODO: implement and test all below
 
 // is the current calendar a valid calendar entry?
 bool calendar_is_valid(kiss_calendar_time const *const calendar_in);

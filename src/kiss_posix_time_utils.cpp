@@ -39,6 +39,24 @@ bool is_leap_year(uint16_t const year_number)
     return (year_number % 4 == 0) && (!(year_number % 100 == 0) || (year_number % 400 == 0));
 }
 
+bool calendar_is_valid(kiss_calendar_time const *const calendar_in){
+    uint8_t month_length = is_leap_year(calendar_in->year) ? days_per_month_leap[calendar_in->month-1] : days_per_month_normal[calendar_in->month-1];
+
+    if (
+            (calendar_in->month >= 1) &&
+            (calendar_in->month <= 12) &&
+            (calendar_in->day >= 1) &&
+            (calendar_in->day <= month_length) &&
+            (calendar_in->hour <= 23) &&
+            (calendar_in->minute <= 59) &&
+            (calendar_in->second <= 59)
+        ){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 #if USE_JR_IMPLEMENTATION
 
