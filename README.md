@@ -2,6 +2,8 @@
 
 Keep it stupid simple primitives for performing conversions between Posix time and calendar time, in CLang (C++ that would be quite easily transposable to C if needed).
 
+**This branch uses a uint64_t posix timestamp, in case you do need to go far in the future (wraps up in approximately 580 billions years). If you need something that only works for a few decades in the future, see the branch param/uint32_t that uses a uint32_t, which wraps up around year 2106.**
+
 ## Why writing this library?
 
 I wrote this small library for some embedded / Arduino projects I was working on. I could not find a simple, minimalistic, non-bloated, unit tested library for doing conversions between Posix time and Gregorian calendar time. In addition, I wanted something that I could i) include easily in any Arduino / PlatformIO project, ii) that did not have any dynamic allocation.
