@@ -59,7 +59,7 @@ difference, but my implementation is more understandable...
 
 // the usual posix epoch: seconds elapsed since 1970, counting leap years, not counting leap seconds
 // we use 64 bits to avoid any problem with the Y2k38 32-bits overflow for many, many years...
-using kiss_time_t = uint64_t;
+using kiss_time_t = uint32_t;
 
 // struct representing calendar date and time in Gregorian calendar, using "natural" conventions,
 // i.e. hour, minute, second is as expected: starting at 0, going up to 23, 59, 59,

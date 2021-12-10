@@ -3,6 +3,7 @@ name: C/C++ CI
 on:
   push:
     branches: [ main ]
+    branches: [ param/uint32_t ]
   pull_request:
     branches: [ main ]
 
