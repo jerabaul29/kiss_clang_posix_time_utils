@@ -2,7 +2,7 @@
 
 Keep it stupid simple primitives for performing conversions between Posix time and calendar time, in CLang (C++ that would be quite easily transposable to C if needed).
 
-**This branch uses a uint_32t posix timestamp, in case you do not need to go too far in the future (wraps up in approximately 1970+136=2196).**
+**This branch uses a uint32_t posix timestamp, in case you do not need to go too far in the future (wraps up approximately year 1970+136=2106). To go further in the future, see the branch main that uses a uint64_t and wraps around 584 billion years in the future.**
 
 ## Why writing this library?
 
